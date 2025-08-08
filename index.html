@@ -7,15 +7,16 @@
 <style>
   body { font-family: Arial, sans-serif; margin: 20px; max-width: 900px; }
   label { display: block; margin-top: 12px; }
-  input, select, button { padding: 6px; margin-top: 4px; font-size: 1rem; }
+  input, select, button, textarea { padding: 6px; margin-top: 4px; font-size: 1rem; }
   #eventList { margin-top: 16px; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; }
-  #eventList li { margin-bottom: 6px; }
+  #eventList li { margin-bottom: 6px; white-space: pre-wrap; }
   .flex { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
   button { cursor: pointer; }
   .small-input { width: 60px; }
   table { border-collapse: collapse; margin-top: 12px; width: 100%; }
   table, th, td { border: 1px solid #ccc; padding: 6px 12px; }
   th { background: #eee; }
+  textarea { resize: vertical; min-height: 40px; max-height: 100px; width: 100%; }
 </style>
 </head>
 <body>
@@ -109,6 +110,10 @@
       </select>
     </label>
   </div>
+  <label style="margin-top:8px;">
+    備註：
+    <textarea id="remarkInput" placeholder="輸入備註內容..."></textarea>
+  </label>
   <button id="btnAddEvent" type="button" style="margin-top: 12px;">新增事件</button>
 </section>
 
@@ -171,6 +176,7 @@
   const base2 = document.getElementById('base2');
   const base3 = document.getElementById('base3');
   const stealSelect = document.getElementById('stealSelect');
+  const remarkInput = document.getElementById('remarkInput');
 
   // Initialize Data
   let games = JSON.parse(localStorage.getItem('games') || '{}');
@@ -227,7 +233,7 @@
       const li = document.createElement('li');
       const basesStr = [ev.base1?'一壘':'', ev.base2?'二壘':'', ev.base3?'三壘'].filter(Boolean).join(', ') || '無';
       li.textContent = 
-        `球數 ${ev.pitchCount}，隊伍: ${ev.team}，打者: ${ev.batter}，投球結果: ${ev.pitchResult}，事件: ${eventNames[ev.event] || '無'}，RBI: ${ev.rbi}，得分: ${ev.runs}，壘包: ${basesStr}，盜壘: ${ev.steal || '無'}`;
+        `球數 ${ev.pitchCount}，隊伍: ${ev.team}，打者: ${ev.batter}，投球結果: ${ev.pitchResult}，事件: ${eventNames[ev.event] || '無'}，RBI: ${ev.rbi}，得分: ${ev.runs}，壘包: ${basesStr}，盜壘: ${ev.steal || '無'}，備註: ${ev.remark || '無'}`;
       eventList.appendChild(li);
     });
   }
@@ -249,4 +255,122 @@
     innings.forEach(inning => {
       const s = inningsScore[inning];
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>第${inning}局</td><td>${
+      tr.innerHTML = `<td>第${inning}局</td><td>${s[g.team1] || 0}</td><td>${s[g.team2] || 0}</td>`;
+      scoreTableBody.appendChild(tr);
+    });
+  }
+
+  // 新增比賽
+  btnAddGame.addEventListener('click', () => {
+    const gameId = inputGameId.value.trim();
+    const team1 = team1NameInput.value.trim();
+    const team2 = team2NameInput.value.trim();
+
+    if (!gameId) return alert('請輸入比賽ID');
+    if (!team1) return alert('請輸入隊伍1名稱');
+    if (!team2) return alert('請輸入隊伍2名稱');
+    if (games[gameId]) return alert('比賽ID已存在');
+
+    games[gameId] = {
+      team1,
+      team2,
+      innings: {},
+      inningsScore: {}
+    };
+
+    saveGames();
+    renderGameOptions();
+    inputGameId.value = '';
+    team1NameInput.value = '';
+    team2NameInput.value = '';
+    alert('新增比賽成功！');
+  });
+
+  // 選擇比賽事件
+  selectGame.addEventListener('change', () => {
+    currentGameId = selectGame.value;
+    currentInning = Number(selectInning.value);
+    if (currentGameId) {
+      const g = games[currentGameId];
+      team1Header.textContent = g.team1;
+      team2Header.textContent = g.team2;
+      renderTeamSelectOptions();
+      renderEventList();
+      renderScoreTable();
+    }
+  });
+
+  // 選擇局數事件
+  selectInning.addEventListener('change', () => {
+    currentInning = Number(selectInning.value);
+    renderEventList();
+  });
+
+  // 新增事件
+  btnAddEvent.addEventListener('click', () => {
+    if (!currentGameId) return alert('請先選擇比賽');
+    const pitchCount = Number(pitchCountInput.value);
+    const team = teamSelect.value;
+    const batter = batterInput.value.trim();
+    const pitchResult = pitchResultSelect.value;
+    const event = eventTypeSelect.value;
+    const rbi = Number(rbiInput.value);
+    const runs = Number(runsInput.value);
+    const baseOne = base1.checked;
+    const baseTwo = base2.checked;
+    const baseThree = base3.checked;
+    const steal = stealSelect.value;
+    const remark = remarkInput.value.trim();
+
+    if (!pitchCount || !team) return alert('請輸入完整球數與隊伍');
+    if (!batter) return alert('請輸入打者姓名');
+    
+    const game = games[currentGameId];
+    if (!game.innings[currentInning]) game.innings[currentInning] = [];
+    if (!game.inningsScore[currentInning]) game.inningsScore[currentInning] = { [game.team1]:0, [game.team2]:0 };
+
+    // 新增事件物件
+    const eventObj = {
+      pitchCount,
+      team,
+      batter,
+      pitchResult,
+      event,
+      rbi,
+      runs,
+      base1: baseOne,
+      base2: baseTwo,
+      base3: baseThree,
+      steal,
+      remark
+    };
+    game.innings[currentInning].push(eventObj);
+
+    // 自動更新比分
+    game.inningsScore[currentInning][team] += runs;
+
+    saveGames();
+    renderEventList();
+    renderScoreTable();
+
+    // 清除輸入欄位，保留隊伍與局數方便連續輸入
+    pitchCountInput.value = pitchCount + 1;
+    batterInput.value = '';
+    pitchResultSelect.value = 'S';
+    eventTypeSelect.value = '';
+    rbiInput.value = 0;
+    runsInput.value = 0;
+    base1.checked = false;
+    base2.checked = false;
+    base3.checked = false;
+    stealSelect.value = '';
+    remarkInput.value = '';
+  });
+
+  // 初始化畫面
+  renderGameOptions();
+
+</script>
+
+</body>
+</html>
