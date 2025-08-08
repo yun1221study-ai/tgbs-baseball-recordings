@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>完整棒球比賽紀錄系統（多場+每局+每球）</title>
+<title>棒球紀錄系統 - 自訂隊伍名稱版</title>
 <style>
   body { font-family: Arial, sans-serif; margin: 20px; max-width: 900px; }
   label { display: block; margin-top: 12px; }
@@ -13,23 +13,31 @@
   .flex { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
   button { cursor: pointer; }
   .small-input { width: 60px; }
-  table { border-collapse: collapse; margin-top: 12px; }
+  table { border-collapse: collapse; margin-top: 12px; width: 100%; }
   table, th, td { border: 1px solid #ccc; padding: 6px 12px; }
   th { background: #eee; }
 </style>
 </head>
 <body>
 
-<h1>完整棒球比賽紀錄系統</h1>
+<h1>棒球紀錄系統 - 自訂隊伍名稱版</h1>
 
 <section>
   <label>
-    新增比賽ID（格式可自由，例如：2025-08-08 台北 vs 高雄）：
+    新增比賽ID（可自訂，例：2025-08-08 台北 vs 高雄）：
     <input type="text" id="inputGameId" placeholder="輸入比賽識別名稱" />
-    <button id="btnAddGame">新增比賽</button>
   </label>
-
   <label>
+    隊伍1名稱：
+    <input type="text" id="team1Name" placeholder="隊伍1" />
+  </label>
+  <label>
+    隊伍2名稱：
+    <input type="text" id="team2Name" placeholder="隊伍2" />
+  </label>
+  <button id="btnAddGame" type="button">新增比賽</button>
+
+  <label style="margin-top:12px;">
     選擇比賽：
     <select id="selectGame">
       <option value="" disabled selected>請先新增比賽</option>
@@ -47,8 +55,7 @@
       <option value="6">第6局</option>
       <option value="7">第7局</option>
       <option value="8">第8局</option>
-      <option value="9">第9局</option
-      <option value="9">第10局</option>
+      <option value="9">第9局</option>
     </select>
   </label>
 </section>
@@ -59,8 +66,7 @@
     <label>球數：<input type="number" id="pitchCountInput" class="small-input" min="1" value="1" /></label>
     <label>隊伍：
       <select id="teamSelect">
-        <option value="home">主隊</option>
-        <option value="away">客隊</option>
+        <option value="">請選擇隊伍</option>
       </select>
     </label>
     <label>打者：<input type="text" id="batterInput" placeholder="姓名+背號" /></label>
@@ -103,7 +109,7 @@
       </select>
     </label>
   </div>
-  <button id="btnAddEvent" style="margin-top: 12px;">新增事件</button>
+  <button id="btnAddEvent" type="button" style="margin-top: 12px;">新增事件</button>
 </section>
 
 <section style="margin-top: 20px; border-top: 2px solid #333; padding-top: 16px;">
@@ -112,8 +118,8 @@
     <thead>
       <tr>
         <th>局數</th>
-        <th>主隊分數</th>
-        <th>客隊分數</th>
+        <th id="team1Header">隊伍1</th>
+        <th id="team2Header">隊伍2</th>
       </tr>
     </thead>
     <tbody id="scoreTableBody">
@@ -144,11 +150,15 @@
 
   // DOM Elements
   const inputGameId = document.getElementById('inputGameId');
+  const team1NameInput = document.getElementById('team1Name');
+  const team2NameInput = document.getElementById('team2Name');
   const btnAddGame = document.getElementById('btnAddGame');
   const selectGame = document.getElementById('selectGame');
   const selectInning = document.getElementById('selectInning');
   const eventList = document.getElementById('eventList');
   const scoreTableBody = document.getElementById('scoreTableBody');
+  const team1Header = document.getElementById('team1Header');
+  const team2Header = document.getElementById('team2Header');
 
   const pitchCountInput = document.getElementById('pitchCountInput');
   const teamSelect = document.getElementById('teamSelect');
@@ -190,6 +200,16 @@
     });
   }
 
+  // Render Team Select in event input
+  function renderTeamSelectOptions() {
+    teamSelect.innerHTML = '<option value="">請選擇隊伍</option>';
+    if (!currentGameId) return;
+    const g = games[currentGameId];
+    if (!g) return;
+    teamSelect.appendChild(new Option(g.team1, g.team1));
+    teamSelect.appendChild(new Option(g.team2, g.team2));
+  }
+
   // Render Event List
   function renderEventList() {
     eventList.innerHTML = '';
@@ -207,7 +227,7 @@
       const li = document.createElement('li');
       const basesStr = [ev.base1?'一壘':'', ev.base2?'二壘':'', ev.base3?'三壘'].filter(Boolean).join(', ') || '無';
       li.textContent = 
-        `球數 ${ev.pitchCount}，隊伍: ${ev.team === 'home' ? '主隊' : '客隊'}，打者: ${ev.batter}，投球結果: ${ev.pitchResult}，事件: ${eventNames[ev.event] || '無'}，RBI: ${ev.rbi}，得分: ${ev.runs}，壘包: ${basesStr}，盜壘: ${ev.steal || '無'}`;
+        `球數 ${ev.pitchCount}，隊伍: ${ev.team}，打者: ${ev.batter}，投球結果: ${ev.pitchResult}，事件: ${eventNames[ev.event] || '無'}，RBI: ${ev.rbi}，得分: ${ev.runs}，壘包: ${basesStr}，盜壘: ${ev.steal || '無'}`;
       eventList.appendChild(li);
     });
   }
@@ -219,7 +239,8 @@
       scoreTableBody.innerHTML = '<tr><td colspan="3">請先選擇比賽</td></tr>';
       return;
     }
-    const inningsScore = games[currentGameId].inningsScore || {};
+    const g = games[currentGameId];
+    const inningsScore = g.inningsScore || {};
     const innings = Object.keys(inningsScore).map(Number).sort((a,b)=>a-b);
     if (innings.length === 0) {
       scoreTableBody.innerHTML = '<tr><td colspan="3">尚無比分紀錄</td></tr>';
@@ -228,108 +249,4 @@
     innings.forEach(inning => {
       const s = inningsScore[inning];
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>第${inning}局</td><td>${s.home}</td><td>${s.away}</td>`;
-      scoreTableBody.appendChild(tr);
-    });
-  }
-
-  // Add Game
-  btnAddGame.addEventListener('click', () => {
-    const gid = inputGameId.value.trim();
-    if (!gid) return alert('請輸入比賽ID');
-    if (games[gid]) return alert('比賽ID已存在');
-    games[gid] = { innings: {}, inningsScore: {} };
-    saveGames();
-    renderGameOptions();
-    inputGameId.value = '';
-    alert(`比賽【${gid}】新增成功！`);
-  });
-
-  // Select Game
-  selectGame.addEventListener('change', e => {
-    currentGameId = e.target.value;
-    renderEventList();
-    renderScoreTable();
-  });
-
-  // Select Inning
-  selectInning.addEventListener('change', e => {
-    currentInning = Number(e.target.value);
-    renderEventList();
-    renderScoreTable();
-  });
-
-  // Add Event
-  document.getElementById('btnAddEvent').addEventListener('click', () => {
-    if (!currentGameId) return alert('請先選擇比賽');
-    const pitchCount = Number(pitchCountInput.value) || 1;
-    const team = teamSelect.value;
-    const batter = batterInput.value.trim() || '未知';
-    const pitchResult = pitchResultSelect.value;
-    const eventType = eventTypeSelect.value;
-    const rbi = Number(rbiInput.value) || 0;
-    const runs = Number(runsInput.value) || 0;
-    const steal = stealSelect.value || '';
-    const base1Val = base1.checked;
-    const base2Val = base2.checked;
-    const base3Val = base3.checked;
-
-    if (!games[currentGameId].innings) games[currentGameId].innings = {};
-    if (!games[currentGameId].innings[currentInning]) games[currentGameId].innings[currentInning] = [];
-    if (!games[currentGameId].inningsScore) games[currentGameId].inningsScore = {};
-    if (!games[currentGameId].inningsScore[currentInning]) {
-      games[currentGameId].inningsScore[currentInning] = { home: 0, away: 0 };
-    }
-
-    const newEvent = {
-      pitchCount,
-      team,
-      batter,
-      pitchResult,
-      event: eventType,
-      rbi,
-      runs,
-      base1: base1Val,
-      base2: base2Val,
-      base3: base3Val,
-      steal,
-      time: new Date().toLocaleString()
-    };
-
-    games[currentGameId].innings[currentInning].push(newEvent);
-
-    // 自動更新比分
-    if (runs > 0) {
-      if (team === 'home') {
-        games[currentGameId].inningsScore[currentInning].home += runs;
-      } else {
-        games[currentGameId].inningsScore[currentInning].away += runs;
-      }
-    }
-
-    saveGames();
-    renderEventList();
-    renderScoreTable();
-
-    // 自動帶入上一筆資料（部分欄位）
-    pitchCountInput.value = pitchCount + 1;
-    batterInput.value = batter;
-    teamSelect.value = team;
-    pitchResultSelect.value = pitchResult;
-    eventTypeSelect.value = '';
-    rbiInput.value = 0;
-    runsInput.value = 0;
-    base1.checked = base1Val;
-    base2.checked = base2Val;
-    base3.checked = base3Val;
-    stealSelect.value = '';
-
-  });
-
-  // 頁面初始載入
-  renderGameOptions();
-
-</script>
-
-</body>
-</html>
+      tr.innerHTML = `<td>第${inning}局</td><td>${
