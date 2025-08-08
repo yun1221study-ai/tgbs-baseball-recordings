@@ -2,50 +2,81 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>進化版棒球紀錄系統</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>完整每球棒球紀錄系統</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <h1>進化版棒球紀錄系統（完整紀錄法）</h1>
+  <h1>完整每球棒球紀錄系統</h1>
+
   <div class="controls">
+    <label>局數：
+      <input type="number" id="inningInput" min="1" max="12" value="1" />
+    </label>
+    <label>球數 (此局)：
+      <input type="number" id="pitchInput" min="1" value="1" />
+    </label>
     <label>隊伍：
-      <select id="teamSelect"><option value="home">主隊</option><option value="away">客隊</option></select>
+      <select id="teamSelect">
+        <option value="home">主隊</option>
+        <option value="away">客隊</option>
+      </select>
+    </label>
+    <label>打者姓名+背號：
+      <input type="text" id="batterInput" placeholder="例如 王大明 #10" />
+    </label>
+    <label>投球結果：
+      <select id="pitchResult">
+        <option value="S">好球 (S)</option>
+        <option value="B">壞球 (B)</option>
+        <option value="F">界外球 (F)</option>
+      </select>
     </label>
     <label>事件：
       <select id="eventType">
-        <option value="">選擇事件</option>
-        <optgroup label="上壘／安打">
-          <option value="hit">安打</option>
-          <option value="dbl">二壘安打</option>
-          <option value="hr">本壘打</option>
-          <option value="bb">四壞保送</option>
-          <option value="hbp">觸身球</option>
-        </optgroup>
-        <optgroup label="出局">
-          <option value="so">三振</option>
-          <option value="out">其他出局</option>
-          <option value="dp">雙殺</option>
-          <option value="t">觸殺（T）</option>
-        </optgroup>
-        <optgroup label="防守">
-          <option value="e">失誤（E）</option>
-          <option value="fc">野手選擇（FC）</option>
-        </optgroup>
-        <option value="l">殘壘（L）</option>
-        <option value="run_er">得分 ●（自責分）</option>
-        <option value="run_nr">得分 O（非自責分）</option>
+        <option value="">無</option>
+        <option value="hit">安打</option>
+        <option value="dbl">二壘安打</option>
+        <option value="hr">本壘打</option>
+        <option value="bb">保送</option>
+        <option value="hbp">觸身球</option>
+        <option value="so">三振</option>
+        <option value="out">其他出局</option>
+        <option value="dp">雙殺</option>
+        <option value="t">觸殺 (T)</option>
+        <option value="e">失誤 (E)</option>
+        <option value="fc">野手選擇 (FC)</option>
+        <option value="l">殘壘 (L)</option>
       </select>
     </label>
-    <button id="addEvent">新增事件</button>
+    <label>打點 (RBI)：
+      <input type="number" id="rbiInput" min="0" value="0" />
+    </label>
+    <label>得分：
+      <input type="number" id="runsInput" min="0" value="0" />
+    </label>
+    <label>殘壘狀態（佔壘）：
+      <input type="checkbox" id="base1" /> 一壘
+      <input type="checkbox" id="base2" /> 二壘
+      <input type="checkbox" id="base3" /> 三壘
+    </label>
+    <label>盜壘：
+      <select id="stealSelect">
+        <option value="">無</option>
+        <option value="成功">成功</option>
+        <option value="失敗">失敗</option>
+      </select>
+    </label>
+    <button id="addEventBtn">新增事件</button>
   </div>
-  <div class="stats">
-    <canvas id="barChart"></canvas>
-    <canvas id="runPieChart"></canvas>
-  </div>
+
   <h2>事件列表</h2>
   <ul id="eventList"></ul>
+
+  <h2>統計圖表</h2>
+  <canvas id="barChart"></canvas>
+
   <script src="script.js"></script>
 </body>
 </html>
