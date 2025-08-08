@@ -2,43 +2,50 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>棒球紀錄系統</title>
-  <link rel="stylesheet" href="style.css"/>
-  <script src="chart.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>進化版棒球紀錄系統</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <h1>⚾ 棒球紀錄系統（中華民國紀錄法）</h1>
-
+  <h1>進化版棒球紀錄系統（完整紀錄法）</h1>
   <div class="controls">
     <label>隊伍：
-      <select id="teamSelect">
-        <option value="home">主隊</option>
-        <option value="away">客隊</option>
-      </select>
+      <select id="teamSelect"><option value="home">主隊</option><option value="away">客隊</option></select>
     </label>
     <label>事件：
       <select id="eventType">
         <option value="">選擇事件</option>
-        <option value="hit">安打</option>
-        <option value="hr">本壘打</option>
-        <option value="bb">保送</option>
-        <option value="so">三振</option>
-        <option value="out">其他出局</option>
-        <option value="run">得分</option>
+        <optgroup label="上壘／安打">
+          <option value="hit">安打</option>
+          <option value="dbl">二壘安打</option>
+          <option value="hr">本壘打</option>
+          <option value="bb">四壞保送</option>
+          <option value="hbp">觸身球</option>
+        </optgroup>
+        <optgroup label="出局">
+          <option value="so">三振</option>
+          <option value="out">其他出局</option>
+          <option value="dp">雙殺</option>
+          <option value="t">觸殺（T）</option>
+        </optgroup>
+        <optgroup label="防守">
+          <option value="e">失誤（E）</option>
+          <option value="fc">野手選擇（FC）</option>
+        </optgroup>
+        <option value="l">殘壘（L）</option>
+        <option value="run_er">得分 ●（自責分）</option>
+        <option value="run_nr">得分 O（非自責分）</option>
       </select>
     </label>
     <button id="addEvent">新增事件</button>
   </div>
-
   <div class="stats">
     <canvas id="barChart"></canvas>
-    <canvas id="pieChart"></canvas>
+    <canvas id="runPieChart"></canvas>
   </div>
-
-  <h2>紀錄列表</h2>
+  <h2>事件列表</h2>
   <ul id="eventList"></ul>
-
   <script src="script.js"></script>
 </body>
 </html>
