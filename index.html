@@ -1,96 +1,44 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>棒球賽記錄 - GitHub Pages</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>棒球紀錄系統</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="chart.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>棒球賽記錄（記錄員）</h1>
-      <p class="muted">純前端 + LocalStorage，適合放在 GitHub Pages</p>
-    </header>
+  <h1>⚾ 棒球紀錄系統（中華民國紀錄法）</h1>
 
-    <section class="new-game">
-      <h2>新增比賽</h2>
-      <input id="teamA" placeholder="主隊名稱 (Team A)" />
-      <input id="teamB" placeholder="客隊名稱 (Team B)" />
-      <button id="createGame">建立比賽</button>
-    </section>
-
-    <section class="games-list">
-      <h2>比賽清單</h2>
-      <ul id="games"></ul>
-    </section>
-
-    <section id="scoreboardSection" class="hidden">
-      <button id="backToList" class="link">← 返回比賽清單</button>
-      <div class="scoreboard">
-        <h2 id="gameTitle"></h2>
-        <div class="score-row">
-          <div class="team">
-            <div id="homeName" class="team-name"></div>
-            <div class="score-controls">
-              <button class="inc" data-side="home">+1</button>
-              <button class="dec" data-side="home">-1</button>
-              <div class="score" id="homeScore">0</div>
-            </div>
-          </div>
-          <div class="team">
-            <div id="awayName" class="team-name"></div>
-            <div class="score-controls">
-              <button class="inc" data-side="away">+1</button>
-              <button class="dec" data-side="away">-1</button>
-              <div class="score" id="awayScore">0</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="controls">
-          <label>局數：
-            <input id="inning" type="number" min="1" value="1" />
-          </label>
-          <label>上下半：
-            <select id="half">
-              <option value="top">上半</option>
-              <option value="bottom">下半</option>
-            </select>
-          </label>
-          <button id="recordEvent">新增事件</button>
-          <button id="clearEvents" class="danger">清空事件</button>
-          <button id="deleteGame" class="danger">刪除比賽</button>
-        </div>
-
-        <div class="events">
-          <h3>事件紀錄</h3>
-          <ol id="eventsList"></ol>
-        </div>
-      </div>
-    </section>
-
-    <footer>
-      <small>資料儲存在本機 LocalStorage。想換成伺服器版可再跟我說！</small>
-    </footer>
+  <div class="controls">
+    <label>隊伍：
+      <select id="teamSelect">
+        <option value="home">主隊</option>
+        <option value="away">客隊</option>
+      </select>
+    </label>
+    <label>事件：
+      <select id="eventType">
+        <option value="">選擇事件</option>
+        <option value="hit">安打</option>
+        <option value="hr">本壘打</option>
+        <option value="bb">保送</option>
+        <option value="so">三振</option>
+        <option value="out">其他出局</option>
+        <option value="run">得分</option>
+      </select>
+    </label>
+    <button id="addEvent">新增事件</button>
   </div>
 
-  <dialog id="eventDialog">
-    <form method="dialog" id="eventForm">
-      <h3>新增事件（例：安打、失誤、換投）</h3>
-      <label>描述
-        <input id="eventDesc" placeholder="e.g. 安打：二壘打 - 王小明" />
-      </label>
-      <label>得分 runs
-        <input id="eventRuns" type="number" min="0" value="0" />
-      </label>
-      <div class="dialog-actions">
-        <button id="saveEvent">儲存</button>
-        <button id="cancelEvent">取消</button>
-      </div>
-    </form>
-  </dialog>
+  <div class="stats">
+    <canvas id="barChart"></canvas>
+    <canvas id="pieChart"></canvas>
+  </div>
 
-  <script src="script.js" type="module"></script>
+  <h2>紀錄列表</h2>
+  <ul id="eventList"></ul>
+
+  <script src="script.js"></script>
 </body>
 </html>
