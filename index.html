@@ -243,25 +243,41 @@
     scoreTableBody.innerHTML = '';
     if (!currentGameId || !games[currentGameId]) {
       scoreTableBody.innerHTML = '<tr><td colspan="3">請先選擇比賽</td></tr>';
+      team1Header.textContent = '隊伍1';
+      team2Header.textContent = '隊伍2';
       return;
     }
     const g = games[currentGameId];
+    team1Header.textContent = g.team1;
+    team2Header.textContent = g.team2;
     const inningsScore = g.inningsScore || {};
-    const innings = Object.keys(inningsScore).map(Number).sort((a,b)=>a-b);
-    if (innings.length === 0) {
-      scoreTableBody.innerHTML = '<tr><td colspan="3">尚無比分紀錄</td></tr>';
-      return;
-    }
-    innings.forEach(inning => {
-      const s = inningsScore[inning];
+    // 找出最大局數
+    const maxInning = Math.max(...Object.keys(inningsScore).map(x=>Number(x)), currentInning);
+
+    for(let i=1; i<=maxInning; i++){
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>第${inning}局</td><td>${s[g.team1] || 0}</td><td>${s[g.team2] || 0}</td>`;
+      const inningTd = document.createElement('td');
+      inningTd.textContent = '第' + i + '局';
+      tr.appendChild(inningTd);
+
+      const score1 = inningsScore[i]?.[g.team1] || 0;
+      const score2 = inningsScore[i]?.[g.team2] || 0;
+
+      const td1 = document.createElement('td');
+      td1.textContent = score1;
+      const td2 = document.createElement('td');
+      td2.textContent = score2;
+
+      tr.appendChild(td1);
+      tr.appendChild(td2);
+
       scoreTableBody.appendChild(tr);
-    });
+    }
   }
 
-  // 新增比賽
-  btnAddGame.addEventListener('click', () => {
+  // 新增比賽事件
+  btnAddGame.addEventListener('click', (e) => {
+    e.preventDefault();
     const gameId = inputGameId.value.trim();
     const team1 = team1NameInput.value.trim();
     const team2 = team2NameInput.value.trim();
@@ -280,6 +296,13 @@
 
     saveGames();
     renderGameOptions();
+    renderTeamSelectOptions();
+
+    // 自動選擇剛新增的比賽
+    selectGame.value = gameId;
+    currentGameId = gameId;
+
+    // 清除輸入欄位
     inputGameId.value = '';
     team1NameInput.value = '';
     team2NameInput.value = '';
@@ -289,15 +312,9 @@
   // 選擇比賽事件
   selectGame.addEventListener('change', () => {
     currentGameId = selectGame.value;
-    currentInning = Number(selectInning.value);
-    if (currentGameId) {
-      const g = games[currentGameId];
-      team1Header.textContent = g.team1;
-      team2Header.textContent = g.team2;
-      renderTeamSelectOptions();
-      renderEventList();
-      renderScoreTable();
-    }
+    renderTeamSelectOptions();
+    renderEventList();
+    renderScoreTable();
   });
 
   // 選擇局數事件
@@ -324,7 +341,7 @@
 
     if (!pitchCount || !team) return alert('請輸入完整球數與隊伍');
     if (!batter) return alert('請輸入打者姓名');
-    
+
     const game = games[currentGameId];
     if (!game.innings[currentInning]) game.innings[currentInning] = [];
     if (!game.inningsScore[currentInning]) game.inningsScore[currentInning] = { [game.team1]:0, [game.team2]:0 };
