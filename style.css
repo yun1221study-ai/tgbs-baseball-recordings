@@ -1,30 +1,68 @@
 body {
   font-family: Arial, sans-serif;
-  padding: 20px;
+  margin: 20px;
+  max-width: 900px;
 }
-.controls {
+
+h1 {
   margin-bottom: 20px;
 }
-.controls select, .controls button {
-  margin-right: 10px;
-  padding: 5px;
-}
-.stats {
+
+.controls {
   display: flex;
-  gap: 20px;
   flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
 }
-canvas {
-  max-width: 400px;
-  background: #fafafa;
-  padding: 10px;
-  border: 1px solid #ddd;
+
+.controls label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  min-width: 140px;
 }
+
+.controls input[type="text"],
+.controls input[type="number"],
+.controls select {
+  padding: 4px 6px;
+  font-size: 14px;
+  margin-top: 4px;
+  width: 130px;
+}
+
+.controls input[type="checkbox"] {
+  width: auto;
+  margin-right: 6px;
+  margin-top: 8px;
+}
+
+button#addEventBtn {
+  align-self: flex-end;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
 #eventList {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 8px;
   list-style: none;
-  padding: 0;
+  font-size: 14px;
 }
+
 #eventList li {
-  padding: 5px;
+  padding: 6px;
   border-bottom: 1px solid #eee;
+}
+
+canvas {
+  max-width: 100%;
+  max-height: 400px;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  padding: 12px;
+  margin-top: 20px;
 }
